@@ -1,5 +1,7 @@
 package bookstore.web;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -28,9 +30,9 @@ public class BookController {
         return "booklist";
     }
 
-    @GetMapping("/delete{id}")
-    public String deleteBook (@PathVariable("id") Long bookId) {
-        bookRepository.deleteById(bookId);
+    @GetMapping("/delete/{id}")
+    public String deleteBook (@PathVariable("id") Long id) {
+        bookRepository.deleteById(id);
         return "redirect:../booklist";
     }
 
@@ -44,5 +46,16 @@ public class BookController {
     public String save(Book book) {
         bookRepository.save(book);
         return "redirect:../booklist";
+    }
+
+    @GetMapping("/edit/{id}")
+    public String editBook(@PathVariable("id") Long id, Model model) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            model.addAttribute("book", book.get());
+            return "editbook";
+        } else {
+            return "redirect:../booklist";
+        }
     }
 }
