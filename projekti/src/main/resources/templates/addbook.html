@@ -13,8 +13,18 @@
         <label>Year: <input type="number" th:field="*{publicationYear}" required/></label><br/>
         <label>Price (€): <input type="number" step="0.01" th:field="*{price}" required/></label><br/>
         <button type="submit">Save</button>
-    </form>
+
+        <label>Category: 
+            <select th:field="*{category}">
+                <option th:each="category : ${categories}" 
+                        th:value="${category.id}" 
+                        th:text="${category.name}">
+                </option>
+            </select>
+        </label>
+    
     <br/>
     <a href="/booklist">Back to Book List</a>
+    </form>
 </body>
 </html>
