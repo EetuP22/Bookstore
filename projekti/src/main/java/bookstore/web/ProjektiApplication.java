@@ -12,6 +12,8 @@ import bookstore.domain.BookRepository;
 import bookstore.domain.Category;
 import bookstore.domain.CategoryRepository;
 
+import java.math.BigDecimal;
+
 @SpringBootApplication(scanBasePackages = "bookstore")
 @EntityScan("bookstore.domain")
 @EnableJpaRepositories("bookstore.domain")
@@ -33,10 +35,9 @@ public class ProjektiApplication {
             categoryRepository.save(philosophy);
             categoryRepository.save(history);
 
-
-            bookRepository.save(new Book("The Book Of Five Rings", "Miyamoto Musashi", 1645, "9781590309841", 9.99, philosophy));
-            bookRepository.save(new Book("Meditations", "Marcus Aurelius", 180, "9780140449334", 12.99, philosophy));
-            bookRepository.save(new Book("Metamorphosis", "Franz Kafka", 1915, "9780140283295", 7.99, fiction));
+            bookRepository.save(new Book("The Book Of Five Rings", "Miyamoto Musashi", 1645, "9781590309841", new BigDecimal("9.99"), philosophy));
+            bookRepository.save(new Book("Meditations", "Marcus Aurelius", 180, "9780140449334", new BigDecimal("12.99"), philosophy));
+            bookRepository.save(new Book("Metamorphosis", "Franz Kafka", 1915, "9780140283295", new BigDecimal("7.99"), fiction));
         };
     }
 }

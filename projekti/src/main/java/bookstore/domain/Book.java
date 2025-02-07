@@ -1,22 +1,31 @@
 package bookstore.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
 
 @Entity
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @NotEmpty(message = "Title is required")
     private String title;
+
+    @NotEmpty(message = "Author is required")
     private String author;
+
+    @Pattern(regexp = "^[0-9]{13}$", message = "ISBN must be a 13-digit number")
     private String isbn;
+
+    @Min(value = 100, message = "Year must be later than 100")
+    @Max(value = 2100, message = "Year cannot be in the future")
     private int publicationYear;
-    private double price;
+
+    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+    @Digits(integer = 10, fraction = 2, message = "Price must be a valid monetary amount")
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
@@ -24,7 +33,7 @@ public class Book {
 
     public Book() {}
 
-    public Book(String title, String author, int publicationYear, String isbn, double price, Category category) {
+    public Book(String title, String author, int publicationYear, String isbn, BigDecimal price, Category category) {
         this.title = title;
         this.author = author;
         this.publicationYear = publicationYear;
@@ -32,6 +41,7 @@ public class Book {
         this.price = price;
         this.category = category;
     }
+
     public Long getId() {
         return id;
     }
@@ -72,11 +82,11 @@ public class Book {
         this.publicationYear = publicationYear;
     }
 
-    public double getPrice() {
+    public BigDecimal getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(BigDecimal price) {
         this.price = price;
     }
 
@@ -87,7 +97,4 @@ public class Book {
     public void setCategory(Category category) {
         this.category = category;
     }
-
-    
-
 }

@@ -1,6 +1,8 @@
 package bookstore.domain;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
+
 import java.util.List;
 
 @Entity
@@ -10,6 +12,7 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @NotEmpty(message = "Name is required")
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
