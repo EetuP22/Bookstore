@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-ProjektiApplication<projekti>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "bookstore.web.ProjektiApplication",
+            "projectName": "projekti",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

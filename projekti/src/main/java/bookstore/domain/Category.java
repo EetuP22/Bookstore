@@ -2,6 +2,7 @@ package bookstore.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
 
@@ -16,9 +17,11 @@ public class Category {
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Book> books;
 
-    public Category() {}
+    public Category() {
+    }
 
     public Category(String name) {
         this.name = name;
@@ -47,7 +50,5 @@ public class Category {
     public void setBooks(List<Book> books) {
         this.books = books;
     }
-
-    
 
 }

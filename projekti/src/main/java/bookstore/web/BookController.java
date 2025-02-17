@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
+
 import bookstore.domain.Book;
 import bookstore.domain.BookRepository;
 import bookstore.domain.CategoryRepository;
@@ -46,7 +47,7 @@ public class BookController {
     @GetMapping("/add")
     public String addBook(Model model) {
         model.addAttribute("book", new Book());
-        model.addAttribute("categories", categoryRepository.findAll()); 
+        model.addAttribute("categories", categoryRepository.findAll());
         return "addbook";
     }
 

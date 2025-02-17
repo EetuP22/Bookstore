@@ -3,8 +3,10 @@ package bookstore.domain;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

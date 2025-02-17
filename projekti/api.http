@@ -1,0 +1,22 @@
+### Get all books
+GET http://localhost:8080/api/books
+
+### Get a book by ID
+GET http://localhost:8080/api/books/1
+
+### Add a new book
+POST http://localhost:8080/api/books
+Content-Type: application/json
+
+{
+    "title": "Sapiens",
+    "author": "Yuval Noah Harari",
+    "isbn": "9780062316097",
+    "publicationYear": 2011,
+    "price": 19.99,
+    "category": { "id": 2 }
+}
+
+### Delete a book by ID
+DELETE http://localhost:8080/api/books/4
+
