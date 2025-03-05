@@ -1,85 +1,90 @@
 package bookstore.web;
 
-import java.util.Optional;
-
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-
+import org.springframework.web.bind.annotation.*;
 
 import bookstore.domain.Book;
 import bookstore.domain.BookRepository;
 import bookstore.domain.CategoryRepository;
 import jakarta.validation.Valid;
 
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
 @Controller
 public class BookController {
 
-    @Autowired
-    private BookRepository bookRepository;
+    private static final Logger log = LoggerFactory.getLogger(BookController.class);
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private final BookRepository repository;
+    private final CategoryRepository cRepository;
 
-    @GetMapping("/index")
-    public String showIndex(Model model) {
-        model.addAttribute("message", "Welcome to the Bookstore!");
-        return "index";
+    public BookController(BookRepository repository, CategoryRepository cRepository) {
+        this.repository = repository;
+        this.cRepository = cRepository;
     }
 
-    @GetMapping("/booklist")
-    public String bookList(Model model) {
-        model.addAttribute("books", bookRepository.findAll());
+    @RequestMapping(value="/login")
+    public String login() {
         return "booklist";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deleteBook(@PathVariable("id") Long id) {
-        bookRepository.deleteById(id);
-        return "redirect:/booklist";
+    @GetMapping(value = { "/", "/booklist" })
+    public String bookList(Model model) {
+        model.addAttribute("books", repository.findAll());
+        return "booklist";
     }
 
-    @GetMapping("/add")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value = "/add")
     public String addBook(Model model) {
         model.addAttribute("book", new Book());
-        model.addAttribute("categories", categoryRepository.findAll());
+        model.addAttribute("categories", cRepository.findAll());
         return "addbook";
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/save")
-    public String saveBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            model.addAttribute("categories", categoryRepository.findAll());
+    public String save(@Valid @ModelAttribute("book") Book book, BindingResult bindingResult, Model model) {
+        log.info("CONTROLLER: Save the book - check validation of book: " + book);
+        if (bindingResult.hasErrors()) {
+            log.info("some validation error happened, book: " + book);
+            model.addAttribute("book", book);
+            model.addAttribute("categories", cRepository.findAll());
             return "addbook";
         }
-        bookRepository.save(book);
+        repository.save(book);
         return "redirect:/booklist";
     }
 
-    @GetMapping("/edit/{id}")
-    public String editBook(@PathVariable("id") Long id, Model model) {
-        Optional<Book> book = bookRepository.findById(id);
-        if (book.isPresent()) {
-            model.addAttribute("book", book.get());
-            model.addAttribute("categories", categoryRepository.findAll());
-            return "editbook";
-        } else {
-            return "redirect:/booklist";
-        }
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value = "/edit/{id}")
+    public String showEditBook(@PathVariable("id") Long bookId, Model model) {
+        Book book = repository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid book ID: " + bookId));
+        model.addAttribute("book", book);
+        model.addAttribute("categories", cRepository.findAll()); 
+        return "editbook";
     }
 
-    @PostMapping("/edit/{id}")
-    public String updateBook(@Valid @ModelAttribute Book book, BindingResult result, Model model) {
-        if (result.hasErrors()) {
-            model.addAttribute("categories", categoryRepository.findAll());
-            return "editbook";
-        }
-        bookRepository.save(book);
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/updateBook")
+    public String updateBook(@ModelAttribute Book book) {
+        repository.save(book);
         return "redirect:/booklist";
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @RequestMapping(value = "/delete/{id}", method=RequestMethod.GET)
+    public String deleteBook(@PathVariable("id") Long bookId, Model model) {
+        repository.deleteById(bookId);
+        return "redirect:/booklist";
+    }
+    
 }
