@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "ProjektiApplication",
+            "request": "launch",
+            "mainClass": "bookstore.ProjektiApplication",
+            "projectName": "projekti"
+        },
+        {
+            "type": "java",
             "name": "Spring Boot-ProjektiApplication<projekti>",
             "request": "launch",
             "cwd": "${workspaceFolder}",
