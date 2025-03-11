@@ -3,19 +3,14 @@ package bookstore.web;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import bookstore.domain.Book;
 import bookstore.domain.BookRepository;
 import bookstore.domain.CategoryRepository;
 import jakarta.validation.Valid;
-
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class BookController {
@@ -30,17 +25,19 @@ public class BookController {
         this.cRepository = cRepository;
     }
 
-    @RequestMapping(value="/login")
+    @RequestMapping(value = "/login")
     public String login() {
-        return "booklist";
+        return "booklist"; // Assuming you have a login page to redirect to.
     }
 
+    // Displays the list of books
     @GetMapping(value = { "/", "/booklist" })
     public String bookList(Model model) {
         model.addAttribute("books", repository.findAll());
         return "booklist";
     }
 
+    // Admin: Displays the form for adding a new book
     @PreAuthorize("hasAuthority('admin')")
     @RequestMapping(value = "/add")
     public String addBook(Model model) {
@@ -49,42 +46,77 @@ public class BookController {
         return "addbook";
     }
 
+    // Admin: Saves a new book, with validation
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("book") Book book, BindingResult bindingResult, Model model) {
-        log.info("CONTROLLER: Save the book - check validation of book: " + book);
+        log.info("CONTROLLER: Saving the book: " + book);
+
+        // Check for validation errors
         if (bindingResult.hasErrors()) {
-            log.info("some validation error happened, book: " + book);
-            model.addAttribute("book", book);
+            log.warn("Validation errors occurred while saving the book: " + book);
+            model.addAttribute("categories", cRepository.findAll());
+            return "addbook"; // Return the form with errors
+        }
+
+        // Check for ISBN duplication before saving
+        if (repository.existsByIsbn(book.getIsbn())) {
+            bindingResult.rejectValue("isbn", "isbn.duplicate", "ISBN already exists.");
             model.addAttribute("categories", cRepository.findAll());
             return "addbook";
         }
+
         repository.save(book);
-        return "redirect:/booklist";
+        log.info("Book saved successfully: " + book);
+        return "redirect:/booklist"; // Redirect to book list after saving
     }
 
     @PreAuthorize("hasAuthority('admin')")
     @RequestMapping(value = "/edit/{id}")
     public String showEditBook(@PathVariable("id") Long bookId, Model model) {
-        Book book = repository.findById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid book ID: " + bookId));
-        model.addAttribute("book", book);
-        model.addAttribute("categories", cRepository.findAll()); 
-        return "editbook";
-    }
+    Book book = repository.findById(bookId)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID: " + bookId));
+    model.addAttribute("book", book);
+    model.addAttribute("categories", cRepository.findAll());
+    return "editbook";
+}
 
     @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/updateBook")
-    public String updateBook(@ModelAttribute Book book) {
-        repository.save(book);
-        return "redirect:/booklist";
+    public String updateBook(@Valid @ModelAttribute Book book, BindingResult bindingResult, Model model) {
+        log.info("CONTROLLER: Updating the book: " + book);
+
+    // Check for validation errors
+    if (bindingResult.hasErrors()) {
+        log.warn("Validation errors occurred while updating the book: " + book);
+        model.addAttribute("categories", cRepository.findAll());
+        return "editbook"; // Return the form with errors
     }
 
-    @PreAuthorize("hasAuthority('admin')")
-    @RequestMapping(value = "/delete/{id}", method=RequestMethod.GET)
-    public String deleteBook(@PathVariable("id") Long bookId, Model model) {
-        repository.deleteById(bookId);
-        return "redirect:/booklist";
-    }
+    // Check for ISBN duplication before saving
+    // If the ISBN is being changed, check for duplication
+    Book existingBook = repository.findById(book.getId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID"));
     
+    if (!existingBook.getIsbn().equals(book.getIsbn()) && repository.existsByIsbn(book.getIsbn())) {
+        bindingResult.rejectValue("isbn", "isbn.duplicate", "ISBN already exists.");
+        model.addAttribute("categories", cRepository.findAll());
+        return "editbook"; // Return the form with the ISBN error
+    }
+
+    // Save the book if no validation errors
+    repository.save(book);
+    log.info("Book updated successfully: " + book);
+
+    // Redirect to the book list after updating
+    return "redirect:/booklist";
+}
+    // Admin: Deletes a book
+    @PreAuthorize("hasAuthority('admin')")
+    @RequestMapping(value = "/delete/{id}", method = RequestMethod.GET)
+    public String deleteBook(@PathVariable("id") Long bookId) {
+        repository.deleteById(bookId);
+        log.info("Deleted book with ID: " + bookId);
+        return "redirect:/booklist"; // Redirect to book list after deletion
+    }
 }

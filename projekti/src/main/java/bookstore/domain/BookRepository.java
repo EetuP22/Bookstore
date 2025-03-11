@@ -7,4 +7,6 @@ import java.util.List;
 @RepositoryRestResource(path = "books")
 public interface BookRepository extends CrudRepository<Book, Long> {
     List<Book> findByTitleContainingIgnoreCase(String title);
+    boolean existsByIsbn(String isbn);
+
 }
