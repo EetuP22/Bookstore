@@ -41,7 +41,7 @@ public class BookController {
         return "booklist";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('admin')")
     @RequestMapping(value = "/add")
     public String addBook(Model model) {
         model.addAttribute("book", new Book());
@@ -49,7 +49,7 @@ public class BookController {
         return "addbook";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("book") Book book, BindingResult bindingResult, Model model) {
         log.info("CONTROLLER: Save the book - check validation of book: " + book);
@@ -63,7 +63,7 @@ public class BookController {
         return "redirect:/booklist";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('admin')")
     @RequestMapping(value = "/edit/{id}")
     public String showEditBook(@PathVariable("id") Long bookId, Model model) {
         Book book = repository.findById(bookId)
@@ -73,14 +73,14 @@ public class BookController {
         return "editbook";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('admin')")
     @PostMapping("/updateBook")
     public String updateBook(@ModelAttribute Book book) {
         repository.save(book);
         return "redirect:/booklist";
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('admin')")
     @RequestMapping(value = "/delete/{id}", method=RequestMethod.GET)
     public String deleteBook(@PathVariable("id") Long bookId, Model model) {
         repository.deleteById(bookId);

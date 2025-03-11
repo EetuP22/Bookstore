@@ -22,7 +22,7 @@
     </div>
     <div sec:authorize="isAuthenticated()">
         <h1>Book-List</h1>
-        <a href="/add" sec:authorize="hasAuthority('ADMIN')">Add Book</a>
+        <a href="/add" sec:authorize="hasAuthority('admin')">Add Book</a>
         <table border="1">
             <tr>
                 <th>Author</th>
@@ -39,8 +39,8 @@
                 <td th:text="${book.publicationYear}"></td>
                 <td th:text="${book.category != null ? book.category.name : 'No category'}"></td>
                 <td>
-                    <a th:href="@{/delete/{id}(id=${book.id})}" sec:authorize="hasAuthority('ADMIN')">Delete</a>
-                    <a th:href="@{/edit/{id}(id=${book.id})}" sec:authorize="hasAuthority('ADMIN')">Edit</a>
+                    <a th:href="@{/delete/{id}(id=${book.id})}" sec:authorize="hasAuthority('admin')">Delete</a>
+                    <a th:href="@{/edit/{id}(id=${book.id})}" sec:authorize="hasAuthority('admin')">Edit</a>
                 </td>
             </tr>
         </table>

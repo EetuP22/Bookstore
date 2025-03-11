@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 @Entity
+@Table(name = "category")
 public class Category {
 
     @Id
@@ -14,6 +15,7 @@ public class Category {
     private Long id;
 
     @NotEmpty(message = "Name is required")
+    @Column(name = "name")
     private String name;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)

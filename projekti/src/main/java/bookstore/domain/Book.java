@@ -7,26 +7,32 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "book")
 public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @NotEmpty(message = "Title is required")
+    @Column(name = "title")
     private String title;
 
     @NotEmpty(message = "Author is required")
+    @Column(name = "author")
     private String author;
 
     @Pattern(regexp = "^[0-9]{13}$", message = "ISBN must be a 13-digit number")
+    @Column(name = "isbn")
     private String isbn;
 
     @Min(value = 100, message = "Year must be later than 100")
     @Max(value = 2100, message = "Year cannot be in the future")
+    @Column(name = "publication_year")
     private int publicationYear;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
     @Digits(integer = 10, fraction = 2, message = "Price must be a valid monetary amount")
+    @Column(name = "price")
     private BigDecimal price;
 
     @ManyToOne
