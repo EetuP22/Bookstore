@@ -2,13 +2,9 @@ package bookstore;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 
 import bookstore.domain.Book;
 import bookstore.domain.BookRepository;
@@ -23,50 +19,50 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
+@SpringBootTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@EnableAutoConfiguration
+@Transactional
 public class RepositoryTest {
-
-    @Autowired private BookRepository bookRepository;
-    @Autowired private CategoryRepository categoryRepository;
-    @Autowired private AppUserRepository appUserRepository;
-
-    @Configuration
-    static class TestConfig {
-        @Bean
-        public PasswordEncoder passwordEncoder() {
-            return new BCryptPasswordEncoder();
-        }
-    }
-
+    
+    @Autowired
+    private BookRepository bookRepository;
+    
+    @Autowired
+    private CategoryRepository categoryRepository;
+    
+    @Autowired
+    private AppUserRepository appUserRepository;
     
     @Test
     public void testAppUserRepository() {
-        
-        AppUser user = new AppUser("testuser", "passwordHash", "ROLE_USER");
+        AppUser user = new AppUser("testuser123", "passwordHash", "user");
         appUserRepository.save(user);
 
-        
         AppUser found = appUserRepository.findByUsername(user.getUsername());
+        assertThat(found).isNotNull();
         assertThat(found.getUsername()).isEqualTo(user.getUsername());
 
-        
         appUserRepository.delete(found);
         Optional<AppUser> deleted = appUserRepository.findById(found.getId());
         assertThat(deleted).isEmpty();
     }
-
-    // Test BookRepository
+    
     @Test
     public void testBookRepository() {
-        Category category = new Category("Fiction");
+        Category category = new Category("Test Fiction");
         categoryRepository.save(category);
 
-        Book book = new Book("The Great Gatsby", "F. Scott Fitzgerald", 1925, "9780743273565", new BigDecimal("10.99"), category);
+        Book book = new Book(
+            "Test Book Title", 
+            "Test Author", 
+            2000, 
+            "1234567890123",  
+            new BigDecimal("10.99"), 
+            category
+        );
         bookRepository.save(book);
 
-        List<Book> foundBooks = bookRepository.findByTitleContainingIgnoreCase("great");
+        List<Book> foundBooks = bookRepository.findByTitleContainingIgnoreCase("test");
         assertThat(foundBooks).hasSize(1);
         assertThat(foundBooks.get(0).getTitle()).isEqualTo(book.getTitle());
 
@@ -74,20 +70,16 @@ public class RepositoryTest {
         Optional<Book> deleted = bookRepository.findById(book.getId());
         assertThat(deleted).isEmpty();
     }
-
-
+    
     @Test
     public void testCategoryRepository() {
-        // Create
-        Category category = new Category("Science Fiction");
+        Category category = new Category("Test Science Fiction");
         categoryRepository.save(category);
 
-        // Search
         Optional<Category> found = categoryRepository.findById(category.getId());
         assertThat(found).isPresent();
         assertThat(found.get().getName()).isEqualTo(category.getName());
 
-        // Delete
         categoryRepository.delete(category);
         Optional<Category> deleted = categoryRepository.findById(category.getId());
         assertThat(deleted).isEmpty();

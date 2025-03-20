@@ -14,8 +14,6 @@ import org.springframework.validation.BindingResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class BookController {
@@ -75,10 +73,29 @@ public class BookController {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/updateBook")
-    public String updateBook(@ModelAttribute Book book) {
-        repository.save(book);
-        return "redirect:/booklist";
+    public String updateBook(@Valid @ModelAttribute Book book, BindingResult bindingResult, Model model) {
+        log.info("CONTROLLER: Updating the book: " + book);
+
+    if (bindingResult.hasErrors()) {
+        log.warn("Validation errors occurred while updating the book: " + book);
+        model.addAttribute("categories", cRepository.findAll());
+        return "editbook"; 
     }
+
+    Book existingBook = repository.findById(book.getId())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid book ID"));
+    
+    if (!existingBook.getIsbn().equals(book.getIsbn()) && repository.existsByIsbn(book.getIsbn())) {
+        bindingResult.rejectValue("isbn", "isbn.duplicate", "ISBN already exists.");
+        model.addAttribute("categories", cRepository.findAll());
+        return "editbook"; 
+    }
+
+    repository.save(book);
+    log.info("Book updated successfully: " + book);
+
+    return "redirect:/booklist";
+}
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @RequestMapping(value = "/delete/{id}", method=RequestMethod.GET)
